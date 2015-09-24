@@ -314,13 +314,12 @@ def _django_use_model(request):
     @pytest.mark.django_db
     @pytest.mark.django_use_model(model)
 
-    :model: ModelClass or 'app.ModelName', one or many
+    :model: ModelClass, one or many
     """
     marker = request.keywords.get('django_use_model', None)
     if not marker:
         return
     from django.db import connection
-    from django.db.utils import OperationalError
 
     model = request.getfuncargvalue('model')
 
@@ -329,25 +328,16 @@ def _django_use_model(request):
     else:
         models = (model,)
 
-    def _model_class(inp):
-        if isinstance(inp, str):
-            from django.apps import apps
-            return apps.get_model(inp)
-        return inp
-
-    model_classes = [_model_class(x) for x in models]
-
     with contextlib.closing(connection.schema_editor()) as schema:
         schema.deferred_sql = []
-        for model_class in model_classes:
-            try:
-                schema.create_model(model_class)
-            except OperationalError:
-                pass
+        for model_class in models:
+            if not hasattr(model, '_meta'):
+                raise ValueError('"model" must be a valid model class')
+            schema.create_model(model_class)
 
     def drop():
         with contextlib.closing(connection.schema_editor()) as schema:
-            for model_class in model_classes:
+            for model_class in models:
                 schema.delete_model(model_class)
 
     request.addfinalizer(drop)

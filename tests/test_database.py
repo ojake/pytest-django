@@ -170,10 +170,11 @@ class TestUseModel:
 
     def test_unmanaged_missing(self):
         """Test that Unmanaged model is not created by default"""
-        with pytest.raises(DatabaseError) as derr:
+        with pytest.raises(DatabaseError):
+            # If table does not exists, django will raise DatabaseError
+            # but the message will depend on the backend.
+            # Probably nothing else can be asserted here.
             Unmanaged.objects.exists()
-
-        assert 'no such table' in str(derr.value)
 
     @pytest.mark.django_use_model(Unmanaged)
     def test_unmanaged_created(self):
