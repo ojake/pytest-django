@@ -107,17 +107,17 @@ on what marks are and for notes on using_ them.
    This will create requested model(s) for the scope of the marker.
    Allows testing of unmanaged models that are normally not created.
 
+   .. note::
+
+      To access database you still have to request access by using
+      ``pytest.mark.django_db``
+
   Example usage::
 
      @pytest.mark.django_db
      @pytest.mark.django_use_model(Unmanaged)
      def test_unmanaged():
         assert Unmanaged.objects.count() >= 0
-
-   .. note::
-
-      To access database you still have to request access by using
-      ``pytest.mark.django_db``
 
 
 Fixtures
